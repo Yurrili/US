@@ -6,31 +6,31 @@
  */ 
  
 
-//Miarowe przygasanie i zapalanie diod
+//Stopniowe przygasanie i zapalanie diod
 
-#define F_CPU 16000000UL // symbol zawieraj筩y cz阺totliwo滄 taktowania procesora
-#define swieci 0b11111111 
-#define ciemne 0b00000000
+#define F_CPU 16000000UL // definicja szybko艣ci taktowania procesora potrzebna funkcji dely do poprawnej pracy
+#define swieci 0b11111111 //ustawienie bit贸w na 1 powoduje zapalenie di贸d
+#define ciemne 0b00000000 //- = - wygaszenie di贸d
 #include <avr/io.h>
 #include <stdint.h>
 #include <util/delay.h>
 
 int main(void)
 {
-    DDRA = 0xFF;
+    DDRA = 0xFF; // ustawienie porty A na output
     int i ;
     int temp = 100;
     int j = 1;
     while(1)
     {
            
-        PORTA = ciemne;
+        PORTA = ciemne;  // manipulacja wyj艣ciem portu A 
         
-        for (i=1;i<1000;i++) //petla zapalaj筩a stopniowo diody
+        for (i=1;i<1000;i++) //petla zapalaj鹿ca stopniowo diody
         {
             
             PORTA = swieci;
-            _delay_ms(i/100); //op鬅nienie zegara   
+            _delay_ms(i/100); //op贸鸥nienie zegara   
 
         
             PORTA = ciemne;
