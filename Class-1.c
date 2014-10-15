@@ -2,7 +2,7 @@
  * GccApplication1.c
  *
  * Created: 2014-10-15 16:20:46
- *  Author:  Mateusz Utkala, Aleksander Kuzel, Klaudia Olejniczak
+ *  Author:  Mateusz Utkala, Oleksandr Kuzhel, Klaudia Olejniczak
  */ 
  
 
