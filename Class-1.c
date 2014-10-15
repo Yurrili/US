@@ -10,14 +10,14 @@
 
 #define F_CPU 16000000UL // definicja szybkości taktowania procesora potrzebna funkcji dely do poprawnej pracy
 #define swieci 0b11111111 //ustawienie bitów na 1 powoduje zapalenie diód
-#define ciemne 0b00000000 //- = - wygaszenie diód
+#define ciemne 0b00000000 //- = - na 0 powoduje wygaszenie diód
 #include <avr/io.h>
 #include <stdint.h>
 #include <util/delay.h>
 
 int main(void)
 {
-    DDRA = 0xFF; // ustawienie porty A na output
+    DDRA = 0xFF; // ustawienie portu A na output
     int i ;
     int temp = 100;
     int j = 1;
