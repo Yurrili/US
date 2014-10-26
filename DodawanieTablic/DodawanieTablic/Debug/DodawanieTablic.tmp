@@ -23,9 +23,11 @@
  <LABELS>
   <tab1><FILE>C:\Users\Mateusz\Documents\GitHub\US\DodawanieTablic\DodawanieTablic\DodawanieTablic.asm</FILE><LINE>12</LINE></tab1>
   <tab2><FILE>C:\Users\Mateusz\Documents\GitHub\US\DodawanieTablic\DodawanieTablic\DodawanieTablic.asm</FILE><LINE>13</LINE></tab2>
-  <LOOP><FILE>C:\Users\Mateusz\Documents\GitHub\US\DodawanieTablic\DodawanieTablic\DodawanieTablic.asm</FILE><LINE>32</LINE></LOOP>
-  <DODAJ><FILE>C:\Users\Mateusz\Documents\GitHub\US\DodawanieTablic\DodawanieTablic\DodawanieTablic.asm</FILE><LINE>46</LINE></DODAJ>
-  <PO_DODANIU><FILE>C:\Users\Mateusz\Documents\GitHub\US\DodawanieTablic\DodawanieTablic\DodawanieTablic.asm</FILE><LINE>41</LINE></PO_DODANIU>
-  <DALEJ><FILE>C:\Users\Mateusz\Documents\GitHub\US\DodawanieTablic\DodawanieTablic\DodawanieTablic.asm</FILE><LINE>52</LINE></DALEJ>
+  <LOOP><FILE>C:\Users\Mateusz\Documents\GitHub\US\DodawanieTablic\DodawanieTablic\DodawanieTablic.asm</FILE><LINE>35</LINE></LOOP>
+  <DODAJ><FILE>C:\Users\Mateusz\Documents\GitHub\US\DodawanieTablic\DodawanieTablic\DodawanieTablic.asm</FILE><LINE>52</LINE></DODAJ>
+  <PO_DODANIU><FILE>C:\Users\Mateusz\Documents\GitHub\US\DodawanieTablic\DodawanieTablic\DodawanieTablic.asm</FILE><LINE>46</LINE></PO_DODANIU>
+  <DALEJ><FILE>C:\Users\Mateusz\Documents\GitHub\US\DodawanieTablic\DodawanieTablic\DodawanieTablic.asm</FILE><LINE>70</LINE></DALEJ>
+  <LEWO><FILE>C:\Users\Mateusz\Documents\GitHub\US\DodawanieTablic\DodawanieTablic\DodawanieTablic.asm</FILE><LINE>61</LINE></LEWO>
+  <POPRAW><FILE>C:\Users\Mateusz\Documents\GitHub\US\DodawanieTablic\DodawanieTablic\DodawanieTablic.asm</FILE><LINE>66</LINE></POPRAW>
  </LABELS>
 </ASSEMBLER_INFO>

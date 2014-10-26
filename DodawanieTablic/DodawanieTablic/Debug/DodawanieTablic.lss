@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.1.52  C:\Users\Mateusz\Documents\GitHub\US\DodawanieTablic\DodawanieTablic\DodawanieTablic.asm Sun Oct 26 02:33:10 2014
+AVRASM ver. 2.1.52  C:\Users\Mateusz\Documents\GitHub\US\DodawanieTablic\DodawanieTablic\DodawanieTablic.asm Sun Oct 26 03:23:08 2014
 
 [builtin](2): Including file 'C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR Assembler\Native\2.1.1117\avrassembler\Include\m32def.inc'
 C:\Users\Mateusz\Documents\GitHub\US\DodawanieTablic\DodawanieTablic\DodawanieTablic.asm(8): Including file 'C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR Assembler\Native\2.1.1117\avrassembler\Include\m32def.inc'
@@ -826,7 +826,7 @@ C:\Users\Mateusz\Documents\GitHub\US\DodawanieTablic\DodawanieTablic\DodawanieTa
                   */ 
                  
                  
-                 .include  "m32def.inc"; wczytuje sterowanie, nazwy portow etc. kontrolera 
+                 .include  "m32def.inc"				; wczytuje sterowanie, nazwy portow etc. kontrolera 
                  
                  ;***** Created: 2011-02-09 12:03 ******* Source: ATmega32.xml ************
                  ;*************************************************************************
@@ -870,79 +870,69 @@ C:\Users\Mateusz\Documents\GitHub\US\DodawanieTablic\DodawanieTablic\DodawanieTa
                  
                  #endif  /* _M32DEF_INC_ */
                  
-                 .EQU LEN = 16 ;dlugosc tablic
-                 .DSEG ;segment danych, twozymy dwie tablice o zdefiniowanej dlugosci w LEN
-                 .org 0x60 ;ustalenie pierwszego adresu segmentu danych
+                 .EQU LEN = 16						;dlugosc tablic
+                 .DSEG								;segment danych, twozymy dwie tablice o zdefiniowanej dlugosci w LEN
+                 .org 0x60							;ustalenie pierwszego adresu segmentu danych
 000060           	tab1: .BYTE LEN
 000070           	tab2: .BYTE LEN
                  
-                 .CSEG ;ustalamy segment kodu
-                 .org 0; zaczynamy od adresu zero
-                 	.DEF INDEX = R16 ; definiujemy zmienna index jako R16
-                 	.DEF TEMP = R17
+                 .CSEG								;segment kodu
+                 .org 0								;zaczynamy od adresu zero
+                 	.DEF INDEX = R16				;definiujemy zmienna index jako R16
+                 	.DEF TEMP = R17	
+                 	.DEF TMP = R18
+                 	.DEF wLEWO = R21				;ilosc przesuniec sie w lewo przy przenoszeniu Carry
                  
-                 	;tab1
-                 	
-000000 e6a0      	LDI XL , low(tab1) ;mniej znaczacy bit - wskaŸnik
-000001 e0b0      	LDI XH , high(tab1) ;bardziej znaczacy bit
+                 	;tab1	
+000000 e6a0      	LDI XL , low(tab1)				;wskaŸnik na pierwszy element
+000001 e0b0      	LDI XH , high(tab1)				;bardziej znaczace bity
                  	;tab2 
 000002 e7c0      	LDI YL , low(tab2)
 000003 e0d0      	LDI YH , high(tab2)
                  
-000004 e100      	LDI INDEX , LEN ; index tablicy ustawiam na d³ugoœæ i bêdziemy zmniejszaæ do 0 w pêtli LOOP
+000004 e00f      	LDI INDEX , (LEN-1)				;index tablicy ustawiamy na d³ugoœæ -1 i bêdziemy zmniejszaæ do 0 w pêtli LOOP. 0 warunkiem stopu
                  
-                 
+000005 0fa0      	ADD XL , INDEX					;przesuwamy wskaŸniki X i Y na koniec tablicy
+000006 0fc0      	ADD YL , INDEX
+000007 9503      	INC INDEX						;poprawa indeksu aby wykona³a siê odpowiednia iloœæ iteracji
                  
                  	LOOP:
-000005 911c      		LD TEMP , X
-000006 9129      		LD R18 , Y+
+000008 911c      		LD TEMP , X					;wczytujemy kolejne elementy rejestru indeksowanego X i Y
+000009 8128      		LD TMP , Y
                  
-000007 1f21      		ADC R18 , TEMP
-000008 932d      		st X+ , R18
-000009 f020      		BRCS DODAJ
-                 
+00000a 0f21      		ADD TMP , TEMP
+00000b 932c      		st X , TMP					;zapisujemy wartosc dodawania w odpowiedniej komórce rejestru X
+00000c 95aa      		DEC XL						;przesuwamy wskaŸniki w lewo
+00000d 95ca      		DEC YL
+00000e e050      		LDI wLEWO , 0				;jezeli pojawi siê przeniesienie bêdzie potrzebne nadmiarowe przejœcie w lewo wiêc trzeba zliczyæ ile tego bêdzie
+00000f f020      		BRCS DODAJ					;wyst¹pi³o przeniesienie przechodzimy do poprawienia wartoœci
                  
                  	PO_DODANIU:
-00000a 950a      		DEC INDEX
-00000b f7c9      	BRNE LOOP	; jump if not ZERO flag, gdy flaga zero w INDEX != 0 wykonaj pêtle jeszcze raz
-00000c 940c 0013 	JMP DALEJ
+000010 950a      		DEC INDEX					;zmniejszamy iloœæ pozosta³ych elementów
+                 
+000011 f7b1      	BRNE LOOP						;jump if not ZERO flag, gdy flaga zero w INDEX != 0 wykonaj pêtle jeszcze raz
+000012 940c 0022 	JMP DALEJ						;koniec elementów wiêc koñczymy 
                  
                  	DODAJ:
-00000e 913c      		LD R19 , X
-00000f 9533      		INC R19
-000010 933c      		st X , R19
-000011 940c 000a 		JMP PO_DODANIU
+000014 9488      		CLC							;trzeba wyczyœciæ flagê C bo tu mo¿e znów wyst¹piæ
+000015 913c      		LD R19 , X					;odczytujemy element na lewo od pola gdzie by³o przeniesienie
+000016 e041      		LDI R20 , 1					;INC R19
+000017 0f34      		ADD R19, R20				;dodawanie zamiast INC bo INC nie zmienia flagi C
+000018 933c      		st X , R19					;zapis wartoœci poprawionej o przeniesienie
+000019 f008      		BRCS LEWO					;by³o przeniesienie
+00001a f420      		BRCC POPRAW					;nie by³o przeniesienia, trzeba poprawiæ ewentualne przejœcia w lewo
                  
+                 	LEWO:
+00001b 95aa      		DEC XL						;wskaŸnik X w lewo
+00001c 9553      		INC wLEWO					;zliczamy przesuniêcie
+00001d 940c 0014 		JMP DODAJ					;bezwarunkowo skaczemy do poprawy wartoœci
+                 
+                 	POPRAW:
+00001f 0fa5      		ADD XL , wLEWO				;przesuwamy wskaŸnik X w miejsce ostatniej operacji
+000020 940c 0010 		JMP PO_DODANIU				;wracamy do g³ównej pêtli bo wskaŸniki s¹ poprawne
+                 		
                  	DALEJ:
-000013 0000      		NOP
-                 
-                 
-                 	/* opcja 1.0
-                 	
-                 
-                 	ADD XL , INDEX	;przesuwamy wskaŸnik na ostatni¹ pozycjê tablicy
-                 	ADD YL , INDEX
-                 
-                 	LOOP:
-                 	 LD TEMP , X
-                 	 
-                 	 DEC XL ; przesuwam wskaŸnik o jeden w lewo
-                 	 DEC INDEX ; wartownik dla pêtli
-                 	BRNE LOOP	; jump if not ZERO flag, gdy flaga zero w INDEX != 0 wykonaj pêtle jeszcze raz
-                 	*/
-                 	
-                 
-                 /*	opcja 0.5
-                 LDI INDEX , LEN
-                 	ADD_LOOP:
-                 	LD R20 , -X
-                 	LD R21 , -Y
-                 
-                 	ADC R26 , R20
-                 	ADC X , R21
-                 
-                 	DEC INDEX
-                 	BRNE ADD_LOOP
+000022 0000      		NOP							;aby nie robic BREAK 
 
 
 RESOURCE USE INFORMATION
@@ -962,23 +952,23 @@ counted separately from r26..r31 here.
 "ATmega32" register use summary:
 r0 :   0 r1 :   0 r2 :   0 r3 :   0 r4 :   0 r5 :   0 r6 :   0 r7 :   0 
 r8 :   0 r9 :   0 r10:   0 r11:   0 r12:   0 r13:   0 r14:   0 r15:   0 
-r16:   2 r17:   2 r18:   3 r19:   3 r20:   0 r21:   0 r22:   0 r23:   0 
-r24:   0 r25:   0 r26:   1 r27:   1 r28:   1 r29:   1 r30:   0 r31:   0 
+r16:   5 r17:   2 r18:   3 r19:   3 r20:   2 r21:   3 r22:   0 r23:   0 
+r24:   0 r25:   0 r26:   5 r27:   1 r28:   3 r29:   1 r30:   0 r31:   0 
 x  :   4 y  :   1 z  :   0 
-Registers used: 10 out of 35 (28.6%)
+Registers used: 12 out of 35 (34.3%)
 
 "ATmega32" instruction use summary:
-.lds  :   0 .sts  :   0 adc   :   1 add   :   0 adiw  :   0 and   :   0 
+.lds  :   0 .sts  :   0 adc   :   0 add   :   5 adiw  :   0 and   :   0 
 andi  :   0 asr   :   0 bclr  :   0 bld   :   0 brbc  :   0 brbs  :   0 
-brcc  :   0 brcs  :   1 break :   0 breq  :   0 brge  :   0 brhc  :   0 
+brcc  :   1 brcs  :   2 break :   0 breq  :   0 brge  :   0 brhc  :   0 
 brhs  :   0 brid  :   0 brie  :   0 brlo  :   0 brlt  :   0 brmi  :   0 
 brne  :   1 brpl  :   0 brsh  :   0 brtc  :   0 brts  :   0 brvc  :   0 
 brvs  :   0 bset  :   0 bst   :   0 call  :   0 cbi   :   0 cbr   :   0 
-clc   :   0 clh   :   0 cli   :   0 cln   :   0 clr   :   0 cls   :   0 
+clc   :   1 clh   :   0 cli   :   0 cln   :   0 clr   :   0 cls   :   0 
 clt   :   0 clv   :   0 clz   :   0 com   :   0 cp    :   0 cpc   :   0 
-cpi   :   0 cpse  :   0 dec   :   1 eor   :   0 fmul  :   0 fmuls :   0 
-fmulsu:   0 icall :   0 ijmp  :   0 in    :   0 inc   :   1 jmp   :   2 
-ld    :   3 ldd   :   0 ldi   :   5 lds   :   0 lpm   :   0 lsl   :   0 
+cpi   :   0 cpse  :   0 dec   :   4 eor   :   0 fmul  :   0 fmuls :   0 
+fmulsu:   0 icall :   0 ijmp  :   0 in    :   0 inc   :   2 jmp   :   3 
+ld    :   3 ldd   :   0 ldi   :   7 lds   :   0 lpm   :   0 lsl   :   0 
 lsr   :   0 mov   :   0 movw  :   0 mul   :   0 muls  :   0 mulsu :   0 
 neg   :   0 nop   :   1 or    :   0 ori   :   0 out   :   0 pop   :   0 
 push  :   0 rcall :   0 ret   :   0 reti  :   0 rjmp  :   0 rol   :   0 
@@ -987,12 +977,12 @@ sbiw  :   0 sbr   :   0 sbrc  :   0 sbrs  :   0 sec   :   0 seh   :   0
 sei   :   0 sen   :   0 ser   :   0 ses   :   0 set   :   0 sev   :   0 
 sez   :   0 sleep :   0 spm   :   0 st    :   2 std   :   0 sts   :   0 
 sub   :   0 subi  :   0 swap  :   0 tst   :   0 wdr   :   0 
-Instructions used: 10 out of 113 (8.8%)
+Instructions used: 12 out of 113 (10.6%)
 
 "ATmega32" memory use summary [bytes]:
 Segment   Begin    End      Code   Data   Used    Size   Use%
 ---------------------------------------------------------------
-[.cseg] 0x000000 0x000028     40      0     40   32768   0.1%
+[.cseg] 0x000000 0x000046     70      0     70   32768   0.2%
 [.dseg] 0x000060 0x000080      0     32     32    2048   1.6%
 [.eseg] 0x000000 0x000000      0      0      0    1024   0.0%
 
