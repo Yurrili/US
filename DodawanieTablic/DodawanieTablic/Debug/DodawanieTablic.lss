@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.1.52  C:\Users\Mateusz\Documents\GitHub\US\DodawanieTablic\DodawanieTablic\DodawanieTablic.asm Sun Oct 26 15:01:31 2014
+AVRASM ver. 2.1.52  C:\Users\Mateusz\Documents\GitHub\US\DodawanieTablic\DodawanieTablic\DodawanieTablic.asm Sun Oct 26 16:06:57 2014
 
 [builtin](2): Including file 'C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR Assembler\Native\2.1.1117\avrassembler\Include\m32def.inc'
 C:\Users\Mateusz\Documents\GitHub\US\DodawanieTablic\DodawanieTablic\DodawanieTablic.asm(9): Including file 'C:\Program Files (x86)\Atmel\Atmel Toolchain\AVR Assembler\Native\2.1.1117\avrassembler\Include\m32def.inc'
@@ -823,7 +823,7 @@ C:\Users\Mateusz\Documents\GitHub\US\DodawanieTablic\DodawanieTablic\DodawanieTa
                   * DodawanieTablic.asm
                   *
                   *   Author:  Mateusz Utkala, Oleksandr Kuzhel, Klaudia Olejniczak
-                  *	 Program czyta mlodsze bity tablic od lewej do prawej
+                  *	 Program czyta mlodsze bity tablic od Prawej do Lewej
                   */ 
                  
                  
@@ -882,7 +882,7 @@ C:\Users\Mateusz\Documents\GitHub\US\DodawanieTablic\DodawanieTablic\DodawanieTa
                  	.DEF INDEX = R16				;definiujemy zmienna index jako R16
                  	.DEF TEMP = R17	
                  	.DEF TMP = R18
-                 	.DEF wPRAWO = R21				;ilosc przesuniec sie w prawo przy przenoszeniu Carry
+                 	.DEF wLEWO = R21				;ilosc przesuniec sie w prawo przy przenoszeniu Carry
                  
                  	;tab1	
 000000 e6a0      	LDI XL , low(tab1)				;wskaŸnik na pierwszy element
@@ -891,48 +891,52 @@ C:\Users\Mateusz\Documents\GitHub\US\DodawanieTablic\DodawanieTablic\DodawanieTa
 000002 e2c8      	LDI YL , low(tab2)
 000003 e0d1      	LDI YH , high(tab2)
                  	
-000004 ec08      	LDI INDEX , LEN 				;index tablicy ustawiamy na d³ugoœæ i bêdziemy zmniejszaæ do 0 w pêtli LOOP. 0 warunkiem stopu
+000004 ec08      	LDI INDEX , LEN 				;index tablicy ustawiamy na d³ugoœæ i bêdziemy zmniejszaæ do 0 w pêtli LOOP aby przesun¹æ indeksy na koniec. 0 warunkiem stopu
+                 
+                 	MOVE_LAST:
+000005 911d      		LD TEMP , X+				;przesuwamy w pêtli wskaŸniki na koniec tablic
+000006 9119      		LD TEMP , Y+
+000007 950a      		DEC INDEX
+000008 f7e1      		BRNE MOVE_LAST				; index != 0 go to MOVE_LAST
+                 					
+000009 ec08      	LDI INDEX , LEN					;ponowna inicjalizacja licznika pêtli
                  
                  	LOOP:
-000005 911c      		LD TEMP , X					;wczytujemy kolejne elementy rejestru indeksowanego X i Y+ (X zostaje a Y siê przesuwa)
-000006 9129      		LD TMP , Y+
+00000a 911e      		LD TEMP , -X				;wczytujemy kolejne elementy rejestru indeksowanego X i Y- (X zostaje a Y siê przesuwa)
+00000b 912a      		LD TMP , -Y
                  
-000007 0f21      		ADD TMP , TEMP
-000008 932d      		st X+ , TMP					;zapisujemy wartosc dodawania w odpowiedniej komórce rejestru X i przesuwamy go w prawo
-000009 e050      		LDI wPRAWO , 0				;jezeli pojawi siê przeniesienie bêdzie potrzebne nadmiarowe przejœcie w prawo wiêc trzeba zliczyæ ile tego bêdzie
-00000a f020      		BRCS DODAJ					;wyst¹pi³o przeniesienie przechodzimy do poprawienia wartoœci
+00000c 0f21      		ADD TMP , TEMP
+00000d 932c      		st X , TMP					;zapisujemy wartosc dodawania w odpowiedniej komórce rejestru X i przesuwamy go w prawo
+00000e e050      		LDI wLEWO , 0				;jezeli pojawi siê przeniesienie bêdzie potrzebne nadmiarowe przejœcie w lewo wiêc trzeba zliczyæ ile tego bêdzie
+00000f f020      		BRCS DODAJ					;wyst¹pi³o przeniesienie przechodzimy do poprawienia wartoœci
                  
-                 	PO_DODANIU:
-00000b 950a      		DEC INDEX					;zmniejszamy iloœæ pozosta³ych elementów
-                 
-00000c f7c1      	BRNE LOOP						;jump if not ZERO flag, gdy flaga zero w INDEX != 0 wykonaj pêtle jeszcze raz
-00000d 940c 0021 	JMP KONIEC						;koniec elementów wiêc koñczymy 
+                 	PO_DODANIU:		
+000010 950a      		DEC INDEX					;zmniejszamy iloœæ pozosta³ych elementów
+000011 f7c1      		BRNE LOOP					;jump if not ZERO flag, gdy flaga zero w INDEX != 0 wykonaj pêtle jeszcze raz
+000012 940c 0024 		JMP KONIEC					;koniec elementów wiêc koñczymy 
                  
                  	DODAJ:
-00000f 9488      		CLC							;trzeba wyczyœciæ flagê C bo tu mo¿e znów wyst¹piæ przeniesienie
-000010 9553      		INC wPRAWO					;zliczamy przesuniêcie
-000011 913c      		LD R19 , X					;odczytujemy element na lewo od pola gdzie by³o przeniesienie
-000012 e041      		LDI R20 , 1					;< == INC R19
-000013 0f34      		ADD R19, R20				;dodawanie zamiast INC bo INC nie zmienia flagi C
-000014 933c      		st X , R19					;zapis wartoœci poprawionej o przeniesienie
-000015 f008      		BRCS PRAWO					;by³o przeniesienie, trzeba przeskoczyæ do nastêpnej komórki
-000016 f418      		BRCC POPRAW					;nie by³o przeniesienia, trzeba poprawiæ ewentualne przejœcia w lewo
-                 
-                 	PRAWO:
-000017 913d      		LD R19 , X+ 				;wskaŸnik X w prawo
-000018 940c 000f 		JMP DODAJ					;bezwarunkowo skaczemy do poprawy wartoœci
+000014 9488      		CLC							;trzeba wyczyœciæ flagê C bo tu mo¿e znów wyst¹piæ przeniesienie
+000015 9553      		INC wLEWO					;zliczamy przesuniêcie
+000016 912e      		LD TMP , -X					;odczytujemy element na prawo od pola gdzie by³o przeniesienie
+000017 e011      		LDI TEMP , 1					;< == INC R19
+000018 0f21      		ADD TMP, TEMP				;dodawanie zamiast INC bo INC nie zmienia flagi C
+000019 932c      		st X , TMP					;zapis wartoœci poprawionej o przeniesienie
+00001a f3c8      		BRCS DODAJ					;by³o przeniesienie, trzeba przeskoczyæ do nastêpnej komórki
+00001b 912d      		LD TMP , X+
+00001c f400      		BRCC POPRAW					;nie by³o przeniesienia, trzeba poprawiæ ewentualne przejœcia w lewo
                  
                  	POPRAW:					
-00001a 955a      		DEC wPRAWO					
-00001b f411      		BRNE PRZESUN				;przesuwamy wskaŸnik X w miejsce ostatniej operacji
-00001c 940c 000b 		JMP PO_DODANIU				;wracamy do g³ównej pêtli bo wskaŸniki s¹ poprawne
+00001d 955a      		DEC wLEWO					
+00001e f411      		BRNE PRZESUN				;w pêtli przesuwamy wskaŸnik X w miejsce ostatniej operacji
+00001f 940c 0010 		JMP PO_DODANIU				;wracamy do g³ównej pêtli bo wskaŸniki s¹ poprawne
                  
                  	PRZESUN:
-00001e 913e      		LD R19 , -X					;cofamy X o jedn¹komórkê w lewo
-00001f 940c 001a 		JMP POPRAW
+000021 912d      		LD TMP , X+					;cofamy X o jedn¹ komórkê w prawo
+000022 940c 001d 		JMP POPRAW
                  
                  	KONIEC:
-000021 0000      		NOP							;aby nie robic BREAK 
+000024 0000      		NOP							;aby nie robic BREAK 
 
 
 RESOURCE USE INFORMATION
@@ -952,23 +956,23 @@ counted separately from r26..r31 here.
 "ATmega32" register use summary:
 r0 :   0 r1 :   0 r2 :   0 r3 :   0 r4 :   0 r5 :   0 r6 :   0 r7 :   0 
 r8 :   0 r9 :   0 r10:   0 r11:   0 r12:   0 r13:   0 r14:   0 r15:   0 
-r16:   2 r17:   2 r18:   3 r19:   5 r20:   2 r21:   3 r22:   0 r23:   0 
+r16:   4 r17:   6 r18:   8 r19:   0 r20:   0 r21:   3 r22:   0 r23:   0 
 r24:   0 r25:   0 r26:   1 r27:   1 r28:   1 r29:   1 r30:   0 r31:   0 
-x  :   6 y  :   1 z  :   0 
-Registers used: 12 out of 35 (34.3%)
+x  :   7 y  :   2 z  :   0 
+Registers used: 10 out of 35 (28.6%)
 
 "ATmega32" instruction use summary:
 .lds  :   0 .sts  :   0 adc   :   0 add   :   2 adiw  :   0 and   :   0 
 andi  :   0 asr   :   0 bclr  :   0 bld   :   0 brbc  :   0 brbs  :   0 
 brcc  :   1 brcs  :   2 break :   0 breq  :   0 brge  :   0 brhc  :   0 
 brhs  :   0 brid  :   0 brie  :   0 brlo  :   0 brlt  :   0 brmi  :   0 
-brne  :   2 brpl  :   0 brsh  :   0 brtc  :   0 brts  :   0 brvc  :   0 
+brne  :   3 brpl  :   0 brsh  :   0 brtc  :   0 brts  :   0 brvc  :   0 
 brvs  :   0 bset  :   0 bst   :   0 call  :   0 cbi   :   0 cbr   :   0 
 clc   :   1 clh   :   0 cli   :   0 cln   :   0 clr   :   0 cls   :   0 
 clt   :   0 clv   :   0 clz   :   0 com   :   0 cp    :   0 cpc   :   0 
-cpi   :   0 cpse  :   0 dec   :   2 eor   :   0 fmul  :   0 fmuls :   0 
-fmulsu:   0 icall :   0 ijmp  :   0 in    :   0 inc   :   1 jmp   :   4 
-ld    :   5 ldd   :   0 ldi   :   7 lds   :   0 lpm   :   0 lsl   :   0 
+cpi   :   0 cpse  :   0 dec   :   3 eor   :   0 fmul  :   0 fmuls :   0 
+fmulsu:   0 icall :   0 ijmp  :   0 in    :   0 inc   :   1 jmp   :   3 
+ld    :   7 ldd   :   0 ldi   :   8 lds   :   0 lpm   :   0 lsl   :   0 
 lsr   :   0 mov   :   0 movw  :   0 mul   :   0 muls  :   0 mulsu :   0 
 neg   :   0 nop   :   1 or    :   0 ori   :   0 out   :   0 pop   :   0 
 push  :   0 rcall :   0 ret   :   0 reti  :   0 rjmp  :   0 rol   :   0 
@@ -982,7 +986,7 @@ Instructions used: 12 out of 113 (10.6%)
 "ATmega32" memory use summary [bytes]:
 Segment   Begin    End      Code   Data   Used    Size   Use%
 ---------------------------------------------------------------
-[.cseg] 0x000000 0x000044     68      0     68   32768   0.2%
+[.cseg] 0x000000 0x00004a     74      0     74   32768   0.2%
 [.dseg] 0x000060 0x0001f0      0    400    400    2048  19.5%
 [.eseg] 0x000000 0x000000      0      0      0    1024   0.0%
 

@@ -1,5 +1,5 @@
 
-AVRASM ver. 2.1.52  C:\Users\Mateusz\Documents\GitHub\US\DodawanieTablic\DodawanieTablic\DodawanieTablic.asm Sun Oct 26 15:01:31 2014
+AVRASM ver. 2.1.52  C:\Users\Mateusz\Documents\GitHub\US\DodawanieTablic\DodawanieTablic\DodawanieTablic.asm Sun Oct 26 16:06:57 2014
 
 
 EQU  SIGNATURE_000 0000001e
@@ -574,11 +574,11 @@ DSEG tab2         00000128
 DEF  INDEX        r16
 DEF  TEMP         r17
 DEF  TMP          r18
-DEF  wPRAWO       r21
-CSEG LOOP         00000005
-CSEG DODAJ        0000000f
-CSEG PO_DODANIU   0000000b
-CSEG KONIEC       00000021
-CSEG PRAWO        00000017
-CSEG POPRAW       0000001a
-CSEG PRZESUN      0000001e
+DEF  wLEWO        r21
+CSEG MOVE_LAST    00000005
+CSEG LOOP         0000000a
+CSEG DODAJ        00000014
+CSEG PO_DODANIU   00000010
+CSEG KONIEC       00000024
+CSEG POPRAW       0000001d
+CSEG PRZESUN      00000021
