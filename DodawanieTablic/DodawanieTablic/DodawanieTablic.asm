@@ -17,22 +17,27 @@
 	.DEF INDEX = R16 ; definiujemy zmienna index jako R16
 	.DEF TEMP = R17
 
-	;tab1
-	
+	;tab1	
 	LDI XL , low(tab1) ;mniej znaczacy bit - wskaŸnik
 	LDI XH , high(tab1) ;bardziej znaczacy bit
 	;tab2 
 	LDI YL , low(tab2)
 	LDI YH , high(tab2)
 
-	LDI INDEX , LEN ; index tablicy ustawiam na d³ugoœæ i bêdziemy zmniejszaæ do 0 w pêtli LOOP
+	LDI INDEX , (LEN-1) ; index tablicy ustawiam na d³ugoœæ i bêdziemy zmniejszaæ do 0 w pêtli LOOP
+
+	ADD XL , INDEX
+	ADD YL , INDEX
+	INC INDEX
 
 	LOOP:
 		LD TEMP , X
-		LD R18 , Y+
+		LD R18 , Y
 
 		ADD R18 , TEMP
-		st X+ , R18
+		st X , R18
+		DEC XL
+		DEC YL
 		BRCS DODAJ
 
 	PO_DODANIU:
