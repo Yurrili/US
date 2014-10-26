@@ -27,16 +27,13 @@
 
 	LDI INDEX , LEN ; index tablicy ustawiam na d³ugoœæ i bêdziemy zmniejszaæ do 0 w pêtli LOOP
 
-
-
 	LOOP:
 		LD TEMP , X
 		LD R18 , Y+
 
-		ADC R18 , TEMP
+		ADD R18 , TEMP
 		st X+ , R18
 		BRCS DODAJ
-
 
 	PO_DODANIU:
 		DEC INDEX
@@ -44,6 +41,7 @@
 	JMP DALEJ
 
 	DODAJ:
+		CLC
 		LD R19 , X
 		INC R19
 		st X , R19
@@ -52,32 +50,3 @@
 
 	DALEJ:
 		NOP
-
-
-	/* opcja 1.0
-	
-
-	ADD XL , INDEX	;przesuwamy wskaŸnik na ostatni¹ pozycjê tablicy
-	ADD YL , INDEX
-
-	LOOP:
-	 LD TEMP , X
-	 
-	 DEC XL ; przesuwam wskaŸnik o jeden w lewo
-	 DEC INDEX ; wartownik dla pêtli
-	BRNE LOOP	; jump if not ZERO flag, gdy flaga zero w INDEX != 0 wykonaj pêtle jeszcze raz
-	*/
-	
-
-/*	opcja 0.5
-LDI INDEX , LEN
-	ADD_LOOP:
-	LD R20 , -X
-	LD R21 , -Y
-
-	ADC R26 , R20
-	ADC X , R21
-
-	DEC INDEX
-	BRNE ADD_LOOP
-	*/
