@@ -1,3 +1,5 @@
+/*Mateusz Utkala, Oleksandr Kuzhel, Klaudia Olejniczak*/
+
 .include "m32def.inc" 
 
 .EQU LEN = 16
@@ -14,7 +16,7 @@ START:
 .DEF SaveSreg = R1 ; tu beziemy przechowywać SREG 
 LDI R16 , low(RAMEND)
 LDI R17 , high(RAMEND) ; inicjalizacja stosu na koncu pamieci
-OUT SPL , R16 ; po co my to robimy jak z tego się nie korzystamy?!
+OUT SPL , R16 ; 
 OUT SPH , R17 ; przekazanie wskaznikow dla wskaznika stosu
 
 LDI XL , low(tab1)
