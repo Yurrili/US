@@ -50,4 +50,4 @@ OK:
 
 	POP R20 ; POP w odwrotnej kolejności 
 	POP R19
-	RET; włączenie przerwań
+	RET; powrót z procedury
