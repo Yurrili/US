@@ -23,12 +23,13 @@
  <LABELS>
   <tab1><FILE>C:\Users\Mateusz\Documents\GitHub\US\DodawanieTablic\DodawanieTablic\DodawanieTablic.asm</FILE><LINE>13</LINE></tab1>
   <tab2><FILE>C:\Users\Mateusz\Documents\GitHub\US\DodawanieTablic\DodawanieTablic\DodawanieTablic.asm</FILE><LINE>14</LINE></tab2>
-  <MOVE_LAST><FILE>C:\Users\Mateusz\Documents\GitHub\US\DodawanieTablic\DodawanieTablic\DodawanieTablic.asm</FILE><LINE>32</LINE></MOVE_LAST>
-  <LOOP><FILE>C:\Users\Mateusz\Documents\GitHub\US\DodawanieTablic\DodawanieTablic\DodawanieTablic.asm</FILE><LINE>40</LINE></LOOP>
-  <DODAJ><FILE>C:\Users\Mateusz\Documents\GitHub\US\DodawanieTablic\DodawanieTablic\DodawanieTablic.asm</FILE><LINE>54</LINE></DODAJ>
-  <PO_DODANIU><FILE>C:\Users\Mateusz\Documents\GitHub\US\DodawanieTablic\DodawanieTablic\DodawanieTablic.asm</FILE><LINE>49</LINE></PO_DODANIU>
-  <KONIEC><FILE>C:\Users\Mateusz\Documents\GitHub\US\DodawanieTablic\DodawanieTablic\DodawanieTablic.asm</FILE><LINE>74</LINE></KONIEC>
-  <POPRAW><FILE>C:\Users\Mateusz\Documents\GitHub\US\DodawanieTablic\DodawanieTablic\DodawanieTablic.asm</FILE><LINE>65</LINE></POPRAW>
-  <PRZESUN><FILE>C:\Users\Mateusz\Documents\GitHub\US\DodawanieTablic\DodawanieTablic\DodawanieTablic.asm</FILE><LINE>70</LINE></PRZESUN>
+  <LOOP><FILE>C:\Users\Mateusz\Documents\GitHub\US\DodawanieTablic\DodawanieTablic\DodawanieTablic.asm</FILE><LINE>32</LINE></LOOP>
+  <DODAJ><FILE>C:\Users\Mateusz\Documents\GitHub\US\DodawanieTablic\DodawanieTablic\DodawanieTablic.asm</FILE><LINE>47</LINE></DODAJ>
+  <PO_DODANIU><FILE>C:\Users\Mateusz\Documents\GitHub\US\DodawanieTablic\DodawanieTablic\DodawanieTablic.asm</FILE><LINE>41</LINE></PO_DODANIU>
+  <KONIEC><FILE>C:\Users\Mateusz\Documents\GitHub\US\DodawanieTablic\DodawanieTablic\DodawanieTablic.asm</FILE><LINE>79</LINE></KONIEC>
+  <POPRAW2><FILE>C:\Users\Mateusz\Documents\GitHub\US\DodawanieTablic\DodawanieTablic\DodawanieTablic.asm</FILE><LINE>75</LINE></POPRAW2>
+  <PRAWO><FILE>C:\Users\Mateusz\Documents\GitHub\US\DodawanieTablic\DodawanieTablic\DodawanieTablic.asm</FILE><LINE>62</LINE></PRAWO>
+  <POPRAW><FILE>C:\Users\Mateusz\Documents\GitHub\US\DodawanieTablic\DodawanieTablic\DodawanieTablic.asm</FILE><LINE>66</LINE></POPRAW>
+  <PRZESUN><FILE>C:\Users\Mateusz\Documents\GitHub\US\DodawanieTablic\DodawanieTablic\DodawanieTablic.asm</FILE><LINE>71</LINE></PRZESUN>
  </LABELS>
 </ASSEMBLER_INFO>
