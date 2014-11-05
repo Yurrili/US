@@ -46,15 +46,14 @@ OK:
 	SBIW Z ,1 ;zmniejszamy długość o 1 
 	KK:
 	BRNE OK 
-
-
-
+        END1:
 	POP R20 ; POP w odwrotnej kolejności 
 	POP R19
 	RET; powrót z procedury
 	
 	LS:
-     IN SaveSreg,sreg ; SBIW zeruje flagi , więc zapisujemy 
+           IN SaveSreg,sreg ; SBIW zeruje flagi , więc zapisujemy 
 	   SBIW Z ,1 ; zmniejszamy długość (nasz licznkik)
+	   BREQ END1 ; jak mamy ostanie bity i przepełnienie 
 	   OUT sreg,SaveSreg ; 
 	   JMP KK ; wracamy
