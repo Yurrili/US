@@ -42,6 +42,7 @@ OK:
 	LD R20 , Y  ; wczytujemy Y
 	ADC R19, R20 ; ADD z uwzględnieniem C
 	ST Y+, R19 ; do Y to co otrzymaliśmy i przechodzimy dalej
+	CLZ ; 
 	BRCS LS ; sprawdzamy czy mamy Carry ,jeśli tak to zapisujemy 
 	SBIW Z ,1 ;zmniejszamy długość o 1 
 	KK:
