@@ -6,16 +6,16 @@
 
 ISR(TIMER0_COMP_vect){
 
-		shedule();		
+	shedule();
 }
+
 
 int main(void)
 {
-	OCR0 = 250;
-	TCCR0 |= (1 << WGM01)  | (0 << WGM00) ;
-	sei();	//wlacza przerwania
-	TIMSK |= (1 << OCIE0); // generowanie przerwania przy 250
-	TCCR0 |= (1<<CS01) | (1<< CS00);//ustawienie preskalera na 64
-	
-	execute();
+		init_scheduler();
+		AddTask(0,50, keypak, NULL);
+		AddTask(1, 20, keypak1, NULL);
+		AddTask(7, 500, NULL, NULL);
+		init_timer_irq();
+		execute();
 }
