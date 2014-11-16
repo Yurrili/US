@@ -3,7 +3,6 @@
 #endif
 #include cooperative_scheduler.h
 
-typedef void (*task_ptr)(void *);
 static int counter1=0;
 static int wait = 1;
 
