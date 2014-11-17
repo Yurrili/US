@@ -1,7 +1,9 @@
+#include cooperative_scheduler.h
+
 #ifndef MAX_NUMBER_OF_TASKS
 #define MAX_NUMBER_OF_TASKS  8 // ilosc elementow
 #endif
-#include cooperative_scheduler.h
+
 
 static int counter1=0;
 static int wait = 1;

@@ -1,6 +1,6 @@
-#ifndef cooperative_scheduler
-#define cooperative_scheduler
-typedef void task_ptr(void*);
+#ifndef COOPERATIVE_SCHEDULER
+#define COOPERATIVE_SCHEDULER
+typedef void (*task_ptr)(void *);
 
 void init_scheduler();
 void init_timer_irq();
