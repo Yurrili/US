@@ -1,4 +1,6 @@
-#include cooperative_scheduler.h
+#include "cooperative_scheduler.h"
+#include <avr/io.h>
+#include <avr/interrupt.h>
 
 #ifndef MAX_NUMBER_OF_TASKS
 #define MAX_NUMBER_OF_TASKS  8 // ilosc elementow

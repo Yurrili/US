@@ -1,5 +1,5 @@
-#ifndef COOPERATIVE_SCHEDULER
-#define COOPERATIVE_SCHEDULER
+#ifndef __COOPERATIVE_SCHEDULER__
+#define __COOPERATIVE_SCHEDULER__
 typedef void (*task_ptr)(void *);
 
 void init_scheduler();
