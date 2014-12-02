@@ -1,3 +1,4 @@
+//Mateusz Utkala, Oleksandr Kuzhel, Klaudia Olejniczak
 #include <avr/io.h>
 #include <avr/interrupt.h>
 #include <stdlib.h>
