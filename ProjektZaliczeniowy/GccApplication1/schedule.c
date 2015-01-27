@@ -3,9 +3,9 @@
 #include <avr/interrupt.h>
 #include <avr/io.h>
 
-#include "scheduler.h"
+#include "schedule.h"
 
-#define MAX_NUMBER_OF_TASKS 5
+//#define MAX_NUMBER_OF_TASKS 5
 
 struct Task task_array[MAX_NUMBER_OF_TASKS];
 

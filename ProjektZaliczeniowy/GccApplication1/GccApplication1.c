@@ -505,14 +505,6 @@ void keybord_menu (void* param)
 
 		// changing time function <-- we need to stop intertupts here
 
-void setHour(int first, int second){
-	six = first;
-	five = second;
-}
-void setMinute(int first, int second){
-	fourth = first;
-	third = second;
-}
 
 void initRS232(){
 	UCSRB |= (1 << RXEN) | (1 << TXEN) ;	//transmit / receive ON
@@ -524,19 +516,51 @@ void initRS232(){
 	sei();
 }
 
+uint8_t recivedCount = 0;
+ALARM timeSet;
+
 void sendCharRS(char zn){
 	while(!(UCSRA & (1<<UDRE))); //wait for finish sending
 	UDR = zn;	//send char
 }
 
-char getCharRS(){
+int getCharRS(){
 	while(!(UCSRA & (1<<RXC))); //wait for finish receiving
+	recivedCount++;
 	return UDR;	//return char
+}
+
+void setTimeRS(ALARM a){
+	six = a.hour_first;
+	five = a.hour_second;
+	fourth = a.minuts_first;
+	third = a.minuts_second;
+	
+	sendCharRS('*');
+}
+
+ISR(USART_RXC_vect)
+{
+	
+	uint8_t ReceivedByte;
+	ReceivedByte = UDR;
+	
+	if(ReceivedByte != 13){
+		switch(recivedCount){
+			case 1: timeSet.hour_first = UDR; break;	//GG
+			case 2: timeSet.hour_second = UDR; break;
+			case 3: break;		// :
+			case 4: timeSet.minuts_first = UDR; break; //MM
+			case 5: timeSet.minuts_second = UDR; setTimeRS(timeSet); recivedCount=0; break;
+		}
+		recivedCount++;
+	}
 }
 
 int main(void)
 {
 		LCD_Initalize();
+		initRS232();
 		
 		AddTask(1, 3, display_on, 0); // task to show
 		AddTask(2, 100, clock_ , 0); //task to clock
