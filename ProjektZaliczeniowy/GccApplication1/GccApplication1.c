@@ -5,7 +5,7 @@
 #include <avr/interrupt.h>
 #include <stdlib.h>
 #include <util/delay.h>
-
+#define USART_BAUDRATE 38400
 static int dot = 0b10000000;
 
 //represents active_screen screen at the moment
@@ -44,7 +44,6 @@ int six = 0;
 
 //change mode
 int change = 0;
-
 
 #define SEG_ALL 0x7F
 #define SEG_A 1
@@ -506,8 +505,35 @@ void keybord_menu (void* param)
 
 		// changing time function <-- we need to stop intertupts here
 
+void setHour(int first, int second){
+	six = first;
+	five = second;
+}
+void setMinute(int first, int second){
+	fourth = first;
+	third = second;
+}
 
+void initRS232(){
+	UCSRB |= (1 << RXEN) | (1 << TXEN) ;	//transmit / receive ON
+	UCSRC |= (0 << URSEL) | (1 << UCSZ0) | (1 << UCSZ1);
 	
+	UBRRH = (25 >> 8);
+	UBRRL = 25;
+	UCSRB |= (1 << RXCIE) | (1 << UDRIE);
+	sei();
+}
+
+void sendCharRS(char zn){
+	while(!(UCSRA & (1<<UDRE))); //wait for finish sending
+	UDR = zn;	//send char
+}
+
+char getCharRS(){
+	while(!(UCSRA & (1<<RXC))); //wait for finish receiving
+	return UDR;	//return char
+}
+
 int main(void)
 {
 		LCD_Initalize();
