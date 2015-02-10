@@ -1,27 +1,40 @@
-
+//kurkadfdsdfsdf
 #include "HD44780.h"
 #include "schedule.h"
 #include <avr/io.h>
+#include <string.h>
 #include <avr/interrupt.h>
 #include <stdlib.h>
 #include <util/delay.h>
 #define USART_BAUDRATE 38400
+
 static int dot = 0b10000000;
+int watch_mode = 0;
+int watch_mode_q = 0;
 
 //represents active_screen screen at the moment
 int active_screen = 0;
-
-typedef struct{ // hour_first hour_second : minuts_first minuts_second
-	int hour_first;
-	int hour_second;
-	int minuts_first;
-	int minuts_second;
+int display_mode = 0;//  0 - mode of setting alarm or  1 - clock
+int display_mode_q = 0;
+int access = 0; // access to changing time or alarm
+// hour_first hour_second : minuts_first minuts_second
+typedef struct{ 
+int hour_first;
+int hour_second;
+int minuts_first;
+int minuts_second;
 } ALARM;
 
 //alarms
 ALARM alarms_set_list[8];
 uint8_t how_many_alarms=0;
 
+int hour_first = 1;
+int hour_second = 2;
+int minuts_first = 0;
+int minuts_second = 0;
+
+int runtime = 1;
 //represents clock mode
 int mode = 0;
 // mode 0 hh:mm
@@ -39,11 +52,9 @@ int second = 0;
 int third = 0;
 int fourth = 0;
 	//hour
-int five = 0;
-int six = 0;
+int five = 2;
+int six = 1;
 
-//change mode
-int change = 0;
 
 #define SEG_ALL 0x7F
 #define SEG_A 1
@@ -54,6 +65,7 @@ int change = 0;
 #define SEG_F 32
 #define SEG_G 64
 
+//7-segment display
 static uint8_t display[] = {
 	~( SEG_ALL - SEG_G ),
 	~( SEG_B + SEG_C ),
@@ -71,7 +83,42 @@ static uint8_t display[] = {
 //interruption handling
 ISR(TIMER0_COMP_vect)
 {
+	if(display_mode == 0)
+		display_on();
+	else
+		display_alarm_setting();
+		
 	schedule();
+}
+
+void display_alarm_setting(){
+	
+	DDRA = 0xff;
+	DDRD = 0xff;
+	PORTD = 0xFF;
+	
+	if(active_screen == 0)
+	{
+		PORTA = display[minuts_second];
+		PORTD = 0b11110111;
+	}
+	else if(active_screen == 1)
+	{
+		PORTA = display[minuts_first];
+		PORTD = 0b11111011;
+	}
+	else if(active_screen == 2)
+	{
+		PORTA = display[hour_second] ; //dot because 00.00
+		PORTD = 0b11111101;
+	}
+	else if(active_screen == 3)
+	{
+		PORTA = display[hour_first];
+		PORTD = 0b11111110;
+	}
+	
+	active_screen = (active_screen + 1) % 4; 
 }
 
 void init_timer_irq()
@@ -81,10 +128,11 @@ void init_timer_irq()
 	sei();										//wlacza przerwania
 	TIMSK |= (1 << OCIE0);						// Output Compare Match Interrupt Enable
 	TCCR0 |= (1<<CS01) | (1<< CS00);			//ustawienie preskalera na 64
+
 }
 
-	//DISPLAY
-void mode_one(){
+//DISPLAY
+void mode_one(){//mm:ss
 	DDRA = 0xff;
 	DDRD = 0xff;
 	PORTD = 0xFF;
@@ -112,7 +160,7 @@ void mode_one(){
 	
 	active_screen = (active_screen + 1) % 4; 
 }
-
+//hh:mm
 void mode_zero(){
 	DDRA = 0xff;
 	DDRD = 0xff;
@@ -145,6 +193,7 @@ void mode_zero(){
 
 void display_on(void* param)
 {
+	
 	//mode mm:ss
 	if(mode == 1)
 	{
@@ -161,6 +210,11 @@ void display_on(void* param)
 //increases time
 void clock_(void* param)
 {
+if(runtime == 1)
+	{
+	if(how_many_alarms > 0){
+		check_alarms();
+	}
 	
 	if(first  < 9)
 	{
@@ -169,7 +223,7 @@ void clock_(void* param)
 	else
 	{
 		first = 0;
-		if(second  < 6)
+		if(second  < 5)
 		{
 			second ++;
 		}
@@ -183,76 +237,36 @@ void clock_(void* param)
 			else
 			{
 				third = 0;
-				if(fourth  < 6)
+				if(fourth  < 5)
 				{
 					fourth++;
 				}
 				else
 				{
 					fourth = 0;	
-					if(six  < 2)// earlier than 20
-					{
-						if(five  < 9 )
-						{
+						if((six*10 + five) <= 18  ) 
 							five++;
-						}
-						else
-						{
+							
+						if((six*10 + five) == 19  ){
+							six = 2;
 							five = 0;
-							six++;
-						}
-					}
-					
-					if(six  == 2)
-					{//after 20
+						} 
 						
-						if(five  < 4 )// 
-						{
+						if((six*10 + five) >= 20 && (six*10 + five) < 23)
 							five++;
-						
-						}
-						else//when 24, it start from begining
-						{
+						 
+						if((six*10 + five) == 23  ){
 							six = 0;
 							five = 0;
 						}
-						
-					}
 				}
 			}
 		}
 	}
+	}
 }
 
-	//KEYBORD
-
-void keybord_read_mode(){
-
-	PORTC = 0x00;//wiersz
-	DDRC= 0x0F;
-	PORTC = 0xF0;
-	
-	int i=0;
-	for (i;i<10;i++);
-	
-	wiersz= PINC;
-	wiersz = (~wiersz >> 4) & 0x0f;
-	
-	PORTC = 0x00;//kolumna
-	
-	DDRC= 0xF0;
-	PORTC = 0x0F;
-	
-	int j=0;
-	for (j;j<10;j++);
-	
-	kolumna = PINC;
-	kolumna = (~kolumna) & 0x0f;
-	
-}
-
-
- 		// calculate
+// calculate
 uint8_t getRowNumber(uint8_t val)
 {
     uint8_t tmp;
@@ -290,178 +304,143 @@ uint8_t getColNumber(uint8_t val)
 }
 
 	//ALARM
-	
-	void AddAlarm(int h_first, int h_second, int m_first, int m_second)
-	{
+void AddAlarm(int h_first, int h_second, int m_first, int m_second)
+{
 		alarms_set_list[how_many_alarms].hour_first = h_first;
 		alarms_set_list[how_many_alarms].hour_second = h_second;
 		alarms_set_list[how_many_alarms].minuts_first = m_first;
 		alarms_set_list[how_many_alarms].minuts_second = m_second;
-		
-		how_many_alarms++;
 	}
 
-	void keybord_set_alarm ()
-	{ // TODO show alarm setting at lcd
-
-		LCD_WriteText("Set Alarm");
-		_delay_ms(400);
-		LCD_Clear();
-		
-		while(change!=0){// do until change last position
-			
-			int h_first = 0;
-			int h_second = 0;
-			int m_first = 0;
-			int m_second = 0;
-			
-			//display setting time
-			LCD_WriteText(h_first + h_second + ":" + m_first + m_second);
-			_delay_ms(200);
-			LCD_Clear();
-			
-			//start reading information from keyboard
-			keybord_read_mode();
-			
-			int number = getRowNumber(wiersz) * 4 + (getColNumber(kolumna));
-			
-			if( number - 1 < 10 ){
-				
-				if(change == 1)
-				{
-					m_second == number - 1 ;
-					change++;
-					
-				}
-				
-				if(change == 2 && number - 1 < 6)
-				{//hh:*m
-					m_first = number - 1;
-					change++;
-				}
-				
-				if(change == 3)
-				{
-					h_second == number - 1;
-					change++;
-				}
-				
-				if(change == 4 && number - 1 < 3){
-					h_first = number - 1;
-					change = 0;
-				}
-				
-				AddAlarm(h_first,h_second, m_first, m_second);
+void set_time()
+{ 
+			if(mode == 1){
+				mode = 0;
 			}
-		}
-	}
+			
+				switch(watch_mode_q)
+				{
+					case 0:  // _ _ : _ 0
+							if(third <= 8  ) 
+								third++;
+							else
+								third=0;
+						break;
+					case 1: //_ _ : 0 _
+							if(fourth <= 4  ) 
+								fourth++;
+							else
+								fourth=0;
+						break;
+					case 2: // 0 0 : _ _
+							if((six*10 + five) <= 18  ) 
+								five++;
+								
+							if((six*10 + five) == 19  ){
+								six = 2;
+								five = 0;
+							} 
+							
+							if((six*10 + five) >= 20 && (six*10 + five) <= 23)
+								five++;
+							 
+							
+							if((six*10 + five) == 24  ){
+								six = 0;
+								five = 0;
+							}
+						break;
+						
+				
+	
+				}
+}
+		
+void set_alarm()
+{ 
+				switch(display_mode_q)
+				{
+					case 0:  // _ _ : _ 0
+					
+							if(minuts_second <= 8  ) 
+								minuts_second++;
+							else
+								minuts_second=0;
+						break;
+					case 1: //_ _ : 0 _
+							if(minuts_first <= 4  ) 
+								minuts_first++;
+							else
+								minuts_first=0;
+						break;
+					case 2: // 0 0 : _ _
+							if((hour_first*10 + hour_second) <= 18  ) 
+								hour_second++;
+								
+							if((hour_first*10 + hour_second) == 19  ){
+								hour_first = 2;
+								hour_second = 0;
+							} 
+							
+							if(((hour_first*10 + hour_second) >= 20) && ((hour_first*10 + hour_second) <= 23))
+								hour_second++;
+							 
+							
+							if((hour_first*10 + hour_second) == 24  ){
+								hour_first = 0;
+								hour_second = 0;
+							}
+						break;
+	
+				}
+}
 
-	void alarm (){
-		int i =0;
+void alarm_RING(){
+		int i = 0;
+		int j = 0;
 		
 		while(i!=800)
 		{
 			i++;
 			LCD_WriteText("BIP BIP");
-			_delay_ms(150);
-			LCD_Clear();
-			_delay_ms(100);
+			for (j;j<200;j++);	
+			LCD_Clear();		
 		}
-
-	}
-
-	void check_alarms()
-	{
-		int i=0;
-		for (i =0;i<how_many_alarms;i++)
-		{
-
-			if (  third == alarms_set_list[how_many_alarms].minuts_second &&
-			fourth == alarms_set_list[how_many_alarms].minuts_first &&
-			five == alarms_set_list[how_many_alarms].hour_second &&
-			six == alarms_set_list[how_many_alarms].hour_first )
-			{
-				alarm();
-			}
-			
-		}
-		
-	}
-
-
-//keybord
-
-void keybord_change_time (){
-
-	while(change!=0){// do until change last position
-		
-		keybord_read_mode();
-		
-		int number = getRowNumber(wiersz) * 4 + (getColNumber(kolumna));
-		
-		if( number - 1 < 10 ){
-			
-			if(change == 1)
-			{
-				
-				if( mode = 0){//mode 0 hh:m*
-					third == number - 1 ;
-					} else {//mode 1 mm:s*
-					first == number - 1;
-				}
-				change++;
-			}
-			
-			if(change == 2)
-			{//hh:*m
-				if( number - 1 < 6)
-				{
-					if( mode = 0)
-					{//mode 0 hh:*m
-						fourth = number - 1;
-					}
-					else
-					{//mode 1 mm:*s
-						second = number - 1;
-					}
-					change++;
-				}
-			}
-			
-			if(change == 3)
-			{
-				if( mode = 0){//mode 0 h*:mm
-					five == number - 1;
-					} else {//mode 1 m*:ss
-					third == number - 1;
-				}
-				change++;
-			}
-			
-			if(change == 4){
-				if( mode = 0){//mode 0 *h:mm
-					if(number - 1 < 3){
-						six = number - 1;
-						change = 0;
-					}
-					}	else {
-					if( number - 1 < 6){
-						fourth = number - 1;
-						change = 0;
-					}
-				}
-			}
-			
-		}
-	}
 }
-	
-		// read menu
+
+void check_alarms()
+{
+	LCD_Clear();
+	LCD_WriteText("ALLARMS");
+		int i = 0 ;
+		int number_first = 0 ;
+		int number_second = 0 ;
+		int number_clock_first = six*10 + five;
+		int number_clock_second = fourth*10 + third;
+		
+		for (i = 0; i < how_many_alarms; i++)
+		{
+			LCD_Clear();
+			LCD_WriteText("AA");
+			number_first = (alarms_set_list[how_many_alarms].hour_first)*10 + alarms_set_list[how_many_alarms].hour_second;
+			number_second = (alarms_set_list[how_many_alarms].minuts_first)*10 + alarms_set_list[how_many_alarms].minuts_second;
+		
+			if ( number_clock_first == number_first)
+			{
+				if (number_clock_second == number_second )
+				{
+								//LCD_WriteText("BBBBB");
+								alarm_RING();	
+				}
+			}
+			
+		}		
+}
+
 void keybord_menu (void* param)
 {
 
-	PORTC = 0x00;//wiersz
-        
+	PORTC = 0x00;//wiersz      
 	DDRC= 0x0F;
 	PORTC = 0xF0;
        
@@ -472,8 +451,7 @@ void keybord_menu (void* param)
    wiersz = PINC;
    wiersz = (~wiersz >> 4) & 0x0f;
       
-   PORTC = 0x00;//kolumna
-        
+   PORTC = 0x00;//kolumna      
    DDRC= 0xF0;
    PORTC = 0x0F;
         
@@ -482,97 +460,208 @@ void keybord_menu (void* param)
          
    kolumna = PINC;
    kolumna = (~kolumna) & 0x0f;
-     
-         
+            
    int number = getRowNumber(wiersz) * 4 + (getColNumber(kolumna));
-         
-   if( number == 16 )  //changing time, when press number "16"
-   	{
-		   change = 1;
-		   keybord_change_time();	
-	}
-	
-	if (number == 15)
+           
+   switch(number)
 	{
-			change = 1;
-			keybord_set_alarm();
-	}				
-			   
-   	
-    
-  // PORTA = display[number];
+		case 1: //changing mode
+				if(watch_mode != 1)
+			   	mode = (mode+1) % 2;
+			   else
+			   	mode = 1;
+			break;
+			
+		case 2://set time / set changing time mode
+			switch(watch_mode)
+			{
+				case 1:
+					
+						if(watch_mode_q == 2){
+							watch_mode = 0;
+							watch_mode_q = 0;
+							access = 0;
+							LCD_Clear();
+							LCD_WriteText("Time Setted");
+						}							
+						if(watch_mode_q < 2)
+							watch_mode_q = (watch_mode_q+1) % 3;
+							
+					
+							
+							if(how_many_alarms > 0){
+									check_alarms();
+								}
+						
+					break;			
+				
+				case 0:
+						watch_mode = 1;
+						access = 1;
+						watch_mode_q = 0;
+						LCD_WriteText("Set TIME");
+					break;	
+			}
+				break;
+				
+		case 3:// ++ time
+		if (access==1)
+		{
+				if(display_mode == 1)
+					set_alarm();
+				if (display_mode == 0)
+					set_time();	
+		}
+			
+			break;
+			
+		case 4:// set alarm
+				switch(display_mode)
+				{
+					case 1:
+						
+							if(display_mode_q == 2){
+								display_mode = 0;
+								display_mode_q = 0;
+								
+								AddAlarm(hour_first, hour_second, minuts_first, minuts_second);
+								how_many_alarms = (how_many_alarms+1) % 9;
+								LCD_Clear();
+								LCD_WriteText(" Alarm ADDED ");
+								access =0;
+								hour_first = 1;
+								hour_second = 2;
+								minuts_first = 0;
+								minuts_second = 0;
+							}								
+							if(display_mode_q < 2)
+								display_mode_q = (display_mode_q+1) % 3;
+								
+						
+								
+								
+					
+						break;			
+					
+					case 0:
+							display_mode = 1;
+							display_mode_q = 0;
+							access = 1;
+							LCD_WriteText("Set Alarm");
+						break;	
+				}
+			break;
+			
+			case 5: //usart
+				
+						cli();
+						runtime = 0;
+						second = usarthandle();
+						sei();
+						runtime = 1;
+						break;
+				
+		
+	}	//switch end
 }
 
-		// changing time function <-- we need to stop intertupts here
 
 
-void initRS232(){
-	UCSRB |= (1 << RXEN) | (1 << TXEN) ;	//transmit / receive ON
-	UCSRC |= (0 << URSEL) | (1 << UCSZ0) | (1 << UCSZ1);
-	
-	UBRRH = (25 >> 8);
-	UBRRL = 25;
-	UCSRB |= (1 << RXCIE) | (1 << UDRIE);
-	sei();
-}
 
-uint8_t recivedCount = 0;
-ALARM timeSet;
-
-void sendCharRS(char zn){
-	while(!(UCSRA & (1<<UDRE))); //wait for finish sending
-	UDR = zn;	//send char
-}
-
-int getCharRS(){
-	while(!(UCSRA & (1<<RXC))); //wait for finish receiving
-	recivedCount++;
-	return UDR;	//return char
-}
-
-void setTimeRS(ALARM a){
-	six = a.hour_first;
-	five = a.hour_second;
-	fourth = a.minuts_first;
-	third = a.minuts_second;
-	
-	sendCharRS('*');
-}
-
-ISR(USART_RXC_vect)
+void usarthandle()
 {
 	
-	uint8_t ReceivedByte;
-	ReceivedByte = UDR;
+	unsigned char dane[3];
+	//godziny
+	PORTA=0x00;
+	dane[0] = USART_Receive();
+	PORTA = 0xFF;
+	USART_Transmit(dane[0]);
+	PORTA = 0x00;
+	dane[1] = USART_Receive();
+	PORTA = 0xFF;
+	USART_Transmit(dane[1]);
 	
-	if(ReceivedByte != 13){
-		switch(recivedCount){
-			case 1: timeSet.hour_first = UDR; break;	//GG
-			case 2: timeSet.hour_second = UDR; break;
-			case 3: break;		// :
-			case 4: timeSet.minuts_first = UDR; break; //MM
-			case 5: timeSet.minuts_second = UDR; setTimeRS(timeSet); recivedCount=0; break;
+	int hour = atoi(dane);	//GG
+	if(hour < 0 || hour > 23)
+		hour = 0;
+	else{
+		six = hour/10;	//lub dane[0]
+		five = hour%10;// dane [1] :)
 		}
-		recivedCount++;
+		
+	PORTA = 0xFF;
+	USART_Transmit('\;');	//hour set confirm via "\;"
+	
+	PORTA=0x00;
+	dane[0] = USART_Receive();	// RECIVE : CHAR
+	
+	PORTA = 0xFF;
+	USART_Transmit('\;');	//confirm recive :
+	
+	
+	//minuty
+	PORTA=0x00;
+	dane[0] = USART_Receive();
+	PORTA = 0xFF;
+	USART_Transmit(dane[0]);
+	PORTA = 0x00;
+	dane[1] = USART_Receive();
+	PORTA = 0xFF;
+	USART_Transmit(dane[1]);
+	int minute = atoi(dane);	// MM
+	
+	if(minute < 0 || minute > 59)
+		minute = 0;
+	else{
+		fourth = minute/10;	// dane[0]
+		 third = minute%10;// dane[1]
+		}
+	
+	PORTA = 0xFF;
+	USART_Transmit('\;');
+	
+	PORTA=0x00;
+	dane[0] = USART_Receive(); // RECIVE ':' CHAR
+	
+	PORTA = 0xFF;
+	USART_Transmit('\;');	//confirm recive :
+	
+	
+	//sekundy
+	PORTA=0x00;
+	dane[0] = USART_Receive();
+	PORTA = 0xFF;
+	USART_Transmit(dane[0]);
+	PORTA = 0x00;
+	dane[1] = USART_Receive();
+	PORTA = 0xFF;
+	USART_Transmit(dane[1]);
+	int secondd = atoi(dane);
+	
+	if(secondd < 0 || secondd > 59)
+		secondd = 0;	
+	else{
+		second = secondd/10;	//dane[0]
+		first = secondd%10;		//dane[1]
 	}
+	
+		PORTA = 0xFF;
+		USART_Transmit('OK'); // finish USART time setup
 }
+
 
 int main(void)
 {
 		LCD_Initalize();
-		initRS232();
-		
-		AddTask(1, 3, display_on, 0); // task to show
-		AddTask(2, 100, clock_ , 0); //task to clock
-		AddTask(3, 10, keybord_menu, 0); // task to type
-		AddTask(4, 5, check_alarms, 0); // task to check alarm    // and task to rule them all
+		LCD_Clear();
+		USART_Init();
+		AddTask(1, 1000, clock_ , 0); //task to clock
+		AddTask(2, 100, keybord_menu, 0); // task to type
+	//AddTask(4, , check_alarms, 0); // task to check alarm    // and task to rule them all
 	
 		init_timer_irq();
 		sei();
-		//make sure we use correct ports
-		//PORTD = ~1;
-		//PORTA = digit[1];
-		//start task checking
 		execute();
     
 }
