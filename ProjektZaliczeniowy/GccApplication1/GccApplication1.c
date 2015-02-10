@@ -8,6 +8,7 @@
 #include <util/delay.h>
 #define USART_BAUDRATE 38400
 
+
 static int dot = 0b10000000;
 int watch_mode = 0;
 int watch_mode_q = 0;
@@ -568,7 +569,7 @@ void keybord_menu (void* param)
 
 
 
-void usarthandle()
+void usarthandle() //GG:MM:ss -> OK
 {
 	
 	unsigned char dane[3];
@@ -655,7 +656,7 @@ int main(void)
 {
 		LCD_Initalize();
 		LCD_Clear();
-		USART_Init();
+		USART_Init();	// speed 38400 , 1bit stop, no parity
 		AddTask(1, 1000, clock_ , 0); //task to clock
 		AddTask(2, 100, keybord_menu, 0); // task to type
 	//AddTask(4, , check_alarms, 0); // task to check alarm    // and task to rule them all
